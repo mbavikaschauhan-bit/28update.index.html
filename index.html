@@ -2443,6 +2443,41 @@
                             </div>
                         </div>
 
+                        <!-- Challenge Statistics Section -->
+                        <div class="mt-12">
+                            <h3 class="text-2xl font-bold mb-6" style="color: var(--text-primary);">Challenge Statistics</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                                <!-- Challenge Wins Card -->
+                                <div class="p-6 rounded-lg shadow-sm" style="background-color: var(--bg-primary); border: 1px solid var(--border-color);">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0">
+                                            <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+                                                <i data-feather="trophy" class="h-6 w-6 text-green-600"></i>
+                                            </div>
+                                        </div>
+                                        <div class="ml-4">
+                                            <h4 class="text-lg font-semibold" style="color: var(--text-primary);">Challenges Won</h4>
+                                            <p id="challenge-wins-count" class="text-3xl font-bold text-green-600">0</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Challenge Losses Card -->
+                                <div class="p-6 rounded-lg shadow-sm" style="background-color: var(--bg-primary); border: 1px solid var(--border-color);">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0">
+                                            <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+                                                <i data-feather="x-circle" class="h-6 w-6 text-red-600"></i>
+                                            </div>
+                                        </div>
+                                        <div class="ml-4">
+                                            <h4 class="text-lg font-semibold" style="color: var(--text-primary);">Challenges Lost</h4>
+                                            <p id="challenge-losses-count" class="text-3xl font-bold text-red-600">0</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
                         <div class="mt-12">
                             <h3 class="text-2xl font-bold mb-6" style="color: var(--text-primary);">Challenge History</h3>
@@ -6265,9 +6300,34 @@
                 } finally {
                     isRendering = false;
                 }
+                
+                // Render challenge statistics
+                renderChallengeStats();
             }, 100); // 100ms debounce delay
         };
         
+        // Render challenge statistics (wins/losses)
+        const renderChallengeStats = () => {
+            try {
+                const history = JSON.parse(localStorage.getItem('challengeHistory') || '[]') || [];
+                
+                // Calculate wins and losses
+                const wins = history.filter(challenge => challenge.completed && challenge.success).length;
+                const losses = history.filter(challenge => challenge.completed && !challenge.success).length;
+                
+                // Update UI
+                document.getElementById('challenge-wins-count').textContent = wins;
+                document.getElementById('challenge-losses-count').textContent = losses;
+                
+                // Re-render feather icons
+                if (typeof feather !== 'undefined') {
+                    feather.replace();
+                }
+            } catch (e) {
+                console.error('renderChallengeStats error', e);
+            }
+        };
+
         const renderChallengeHistory = () => {
             try {
                 const history = JSON.parse(localStorage.getItem('challengeHistory') || '[]') || [];
@@ -6309,6 +6369,9 @@
                         </div>
                     `;
                 }).join('');
+                
+                // Render challenge statistics
+                renderChallengeStats();
             } catch (e) {
                 console.error('renderChallengeHistory error', e);
             }
@@ -9573,6 +9636,7 @@
                 closeChallengeModal();
                 renderChallenge();
                 renderChallengeHistory();
+                renderChallengeStats();
                 showToast('Challenge set successfully!', 'success');
             } catch (err) {
                 console.error('Failed to save challenge', err);
