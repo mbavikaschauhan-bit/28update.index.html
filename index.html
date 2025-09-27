@@ -3971,7 +3971,7 @@
                             renderChallengeHistory();
                         } else if (attempts < maxAttempts) {
                             attempts++;
-                            setTimeout(checkData, 50); // Reduced from 100ms to 50ms
+                            setTimeout(checkData, 200); // Optimized to 200ms to prevent jitter
                         } else {
                             // Render anyway after timeout (will show empty state)
                             renderChallenge();
@@ -6062,11 +6062,24 @@
             return current;
         };
 
+        // Render debouncing and guards to prevent jitter
+        let renderTimeout;
+        let isRendering = false;
+        
         const renderChallenge = () => {
-            try {
-                const challenge = JSON.parse(localStorage.getItem('activeChallenge') || 'null');
-                const activeContainer = document.getElementById('challenge-active-container');
-                const inactiveContainer = document.getElementById('challenge-inactive-container');
+            // Prevent multiple simultaneous renders
+            if (isRendering) return;
+            
+            // Clear any pending render
+            clearTimeout(renderTimeout);
+            
+            // Debounce renders to prevent rapid re-renders
+            renderTimeout = setTimeout(() => {
+                try {
+                    isRendering = true;
+                    const challenge = JSON.parse(localStorage.getItem('activeChallenge') || 'null');
+                    const activeContainer = document.getElementById('challenge-active-container');
+                    const inactiveContainer = document.getElementById('challenge-inactive-container');
                 
                 // Get theme colors for chart rendering
                 const themeColors = getThemeColors();
@@ -6074,9 +6087,14 @@
                 console.log('renderChallenge called - Challenge:', challenge, 'Trades count:', appState.trades?.length || 0);
                 
                 if (challenge && challenge.id) {
-                    // Show active challenge
-                    activeContainer.classList.remove('hidden');
-                    inactiveContainer.classList.add('hidden');
+                    // Show active challenge - only toggle if state actually changed
+                    const shouldShowActive = true;
+                    const currentlyActive = !activeContainer.classList.contains('hidden');
+                    
+                    if (shouldShowActive !== currentlyActive) {
+                        activeContainer.classList.toggle('hidden', !shouldShowActive);
+                        inactiveContainer.classList.toggle('hidden', shouldShowActive);
+                    }
                     
                     const now = new Date();
                     const startDate = new Date(challenge.startDate);
@@ -6122,12 +6140,17 @@
                     document.getElementById('challenge-win-rate').textContent = `${winRate.toFixed(1)}%`;
                     document.getElementById('challenge-progress-percent').textContent = `${progressPercent.toFixed(0)}%`;
                     
-                    // Update progress chart
+                    // Update progress chart - only recreate if data changed significantly
                     const progressCtx = document.getElementById('challengeProgressChart');
                     if (progressCtx && typeof Chart !== 'undefined') {
-                        if (chartInstances['challengeProgressChart']) {
-                            chartInstances['challengeProgressChart'].destroy();
-                        }
+                        // Check if chart needs recreation (only if progress changed by more than 5%)
+                        const needsRecreation = !chartInstances['challengeProgressChart'] || 
+                            Math.abs((chartInstances['challengeProgressChart'].data.datasets[0].data[0] || 0) - progressPercent) > 5;
+                        
+                        if (needsRecreation) {
+                            if (chartInstances['challengeProgressChart']) {
+                                chartInstances['challengeProgressChart'].destroy();
+                            }
                         
                         const progressChart = new Chart(progressCtx, {
                             type: 'doughnut',
@@ -6152,7 +6175,12 @@
                                 }
                             }
                         });
-                        chartInstances['challengeProgressChart'] = progressChart;
+                            chartInstances['challengeProgressChart'] = progressChart;
+                        } else {
+                            // Just update the data without recreating the chart
+                            chartInstances['challengeProgressChart'].data.datasets[0].data = [progressPercent, 100 - progressPercent];
+                            chartInstances['challengeProgressChart'].update('none'); // No animation for smoother updates
+                        }
                     }
                     
                     // Calculate additional metrics
@@ -6223,13 +6251,21 @@
                     }
                     
                 } else {
-                    // Show inactive state
-                    activeContainer.classList.add('hidden');
-                    inactiveContainer.classList.remove('hidden');
+                    // Show inactive state - only toggle if state actually changed
+                    const shouldShowActive = false;
+                    const currentlyActive = !activeContainer.classList.contains('hidden');
+                    
+                    if (shouldShowActive !== currentlyActive) {
+                        activeContainer.classList.toggle('hidden', !shouldShowActive);
+                        inactiveContainer.classList.toggle('hidden', shouldShowActive);
+                    }
                 }
-            } catch (e) {
-                console.error('renderChallenge error', e);
-            }
+                } catch (e) {
+                    console.error('renderChallenge error', e);
+                } finally {
+                    isRendering = false;
+                }
+            }, 100); // 100ms debounce delay
         };
         
         const renderChallengeHistory = () => {
