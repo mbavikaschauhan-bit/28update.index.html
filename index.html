@@ -2529,8 +2529,6 @@
 
     <!-- Utilities Floating Buttons -->
     <div class="fixed bottom-6 right-6 z-50 flex flex-col gap-2">
-        <button id="seed-demo-data" class="px-3 py-2 rounded-md text-xs" style="background-color: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border-color);">Seed Demo Data</button>
-        <button id="clear-demo-data" class="px-3 py-2 rounded-md text-xs" style="background-color: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border-color);">Clear Data</button>
         <button id="set-supabase-keys" class="px-3 py-2 rounded-md text-xs" style="background-color: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border-color);">Set Supabase Keys</button>
     </div>
 
@@ -6597,21 +6595,9 @@
                     return baseBalance + cumulativeToDay;
                 });
                 
-                // Generate sample data if no trades
+                // Use real data only
                 const labels = sortedDays.length > 0 ? sortedDays : [];
                 let data = sortedDays.length > 0 ? sortedDays.map(d => byDay[d]) : [];
-                
-                if (data.length === 0) {
-                    // Generate sample data for demo
-                    const today = new Date();
-                    for (let i = 6; i >= 0; i--) {
-                        const date = new Date(today);
-                        date.setDate(date.getDate() - i);
-                        const dateStr = date.toISOString().slice(0,10);
-                        labels.push(dateStr);
-                        data.push(Math.random() * 2000 - 1000); // Random P&L between -1000 and 1000
-                    }
-                }
 
                 const colorUp = 'rgba(34,197,94,0.7)';
                 const colorDown = 'rgba(239,68,68,0.7)';
@@ -6697,11 +6683,7 @@
                     const labels = sortedDates.length > 0 ? sortedDates.map(date => formatDateDDMMYYYY(date)) : [];
                     const data = sortedDates.length > 0 ? sortedDates.map(date => dailyPnlData[date]) : [];
                     
-                    // If no data, show sample data
-                    if (data.length === 0) {
-                        labels.push('01-01-2024', '02-01-2024', '03-01-2024', '04-01-2024', '05-01-2024');
-                        data.push(2500, -800, 1200, 3500, -500);
-                    }
+                    // Use real data only - no sample data
                     
                     const dailyPnlChart = new Chart(dailyPnlCtx, {
                         type: 'bar',
@@ -7059,16 +7041,16 @@
                     console.log('Account Balance Chart - ledger length:', ledger.length);
                     console.log('Account Balance Chart - trades length:', allTrades.length);
                     
-                    // If no dates, create sample data
+                    // Use real data only
                     let chartLabels, accountValueData, cumulativeDeposits, cumulativeWithdrawals, cumulativePnl;
                     
                     if (sortedDates.length === 0) {
-                        // Sample data - starts from first deposit amount
-                        chartLabels = ['01-01-2024', '15-01-2024', '01-02-2024', '15-02-2024', '01-03-2024'];
-                        accountValueData = [100000, 105000, 112000, 108000, 115000]; // First deposit + P&L
-                        cumulativeDeposits = [100000, 100000, 100000, 100000, 100000];
-                        cumulativeWithdrawals = [0, 0, 0, 0, 0];
-                        cumulativePnl = [0, 5000, 12000, 8000, 15000];
+                        // No data available
+                        chartLabels = [];
+                        accountValueData = [];
+                        cumulativeDeposits = [];
+                        cumulativeWithdrawals = [];
+                        cumulativePnl = [];
                     } else {
                         // Calculate cumulative values for each date
                         chartLabels = sortedDates.map(date => formatDateDDMMYYYY(date));
@@ -7274,12 +7256,7 @@
                     }) : [];
                     const data = sortedMonths.length > 0 ? sortedMonths.map(month => monthlyPnlData[month]) : [];
                     
-                    // If no data, show sample data
-                    if (data.length === 0) {
-                        console.log('No monthly data found, using sample data');
-                        labels.push('JAN 2024', 'FEB 2024', 'MAR 2024', 'APR 2024', 'MAY 2024');
-                        data.push(15000, -5000, 12000, 8000, 20000);
-                    }
+                    // Use real data only - no sample data
                     
                     console.log('Monthly chart labels:', labels);
                     console.log('Monthly chart data:', data);
@@ -7376,11 +7353,7 @@
                     let segmentLabels = Object.keys(segmentData);
                     let segmentPnlValues = segmentLabels.map(segment => segmentData[segment].totalPnl);
                     
-                    // If no trades, show sample data for common segments
-                    if (segmentLabels.length === 0) {
-                        segmentLabels = ['Equity', 'Commodity', 'Currency', 'Derivatives'];
-                        segmentPnlValues = [15000, 8000, -2000, 5000];
-                    }
+                    // Use real data only - no sample data
                     
                     // Use different colors for each segment
                     const segmentColors = [
@@ -7497,11 +7470,7 @@
                     let tradingStyleLabels = Object.keys(tradingStyleData);
                     let tradingStylePnlValues = tradingStyleLabels.map(style => tradingStyleData[style].totalPnl);
                     
-                    // If no trades, show sample data for common trading styles
-                    if (tradingStyleLabels.length === 0) {
-                        tradingStyleLabels = ['Scalping', 'Intraday', 'Swing', 'Position', 'Long-Term'];
-                        tradingStylePnlValues = [5000, 12000, 8000, 15000, 25000];
-                    }
+                    // Use real data only - no sample data
                     
                     // Use different colors for each trading style
                     const tradingStyleColors = [
@@ -7726,15 +7695,7 @@
                     const dayLabels = Object.keys(dayPnlData);
                     const dayPnlValues = Object.values(dayPnlData);
                     
-                    // If no trades, show sample data
-                    if (dayPnlValues.every(val => val === 0)) {
-                        dayPnlData['Monday'] = 2500;
-                        dayPnlData['Tuesday'] = -800;
-                        dayPnlData['Wednesday'] = 1200;
-                        dayPnlData['Thursday'] = 3500;
-                        dayPnlData['Friday'] = -500;
-                        // Sunday and Saturday remain 0
-                    }
+                    // Use real data only - no sample data
                     
                     // Color bars based on profit/loss
                     const dayColors = Object.values(dayPnlData).map(pnl => 
@@ -7861,15 +7822,7 @@
                     const dayLabels = Object.keys(dayData);
                     const dayValues = Object.values(dayData);
                     
-                    // If no trades, show sample data matching the image
-                    if (dayValues.every(val => val === 0)) {
-                        dayData['Monday'] = 6;
-                        dayData['Tuesday'] = 12;
-                        dayData['Wednesday'] = 6;
-                        dayData['Thursday'] = 35;
-                        dayData['Friday'] = 6;
-                        // Sunday and Saturday remain 0
-                    }
+                    // Use real data only - no sample data
                     
                     const tradeDistributionChart = new Chart(tradeDistributionCtx, {
                         type: 'bar',
@@ -8082,74 +8035,17 @@
                     
                     const sortedDates = Array.from(allDates).sort();
                     
-                    // If no trades, create comprehensive demo data
+                    // Use real data only
                     let chartLabels, dailyWinRateData, avgWinRateData, tooltipData;
                     
                     if (sortedDates.length === 0) {
-                        console.log('No trades found, using comprehensive demo data for Daily Win Rate Chart');
-                        
-                        // Demo dataset with realistic trading scenarios
-                        const demoDates = [
-                            '2024-06-28', '2024-07-02', '2024-07-09', '2024-07-11', '2024-07-12',
-                            '2024-07-16', '2024-07-18', '2024-07-19', '2024-07-22', '2024-07-29',
-                            '2024-07-30', '2024-07-31', '2024-08-06', '2024-08-07', '2024-08-09',
-                            '2024-08-12', '2024-08-13', '2024-08-14', '2024-08-15', '2024-08-16',
-                            '2024-08-20', '2024-08-21', '2024-08-28', '2024-08-29', '2024-08-30'
-                        ];
-                        
-                        // Demo statistics for each date
-                        const demoStats = [
-                            { wins: 0, losses: 0, breakeven: 0, total: 0, rate: 0, avgWin: 0, avgLoss: 0, netPnl: 0 },
-                            { wins: 0, losses: 0, breakeven: 0, total: 0, rate: 0, avgWin: 0, avgLoss: 0, netPnl: 0 },
-                            { wins: 0, losses: 0, breakeven: 0, total: 0, rate: 0, avgWin: 0, avgLoss: 0, netPnl: 0 },
-                            { wins: 1, losses: 0, breakeven: 0, total: 1, rate: 100, avgWin: 2500, avgLoss: 0, netPnl: 2500 },
-                            { wins: 1, losses: 2, breakeven: 0, total: 3, rate: 33.33, avgWin: 1800, avgLoss: -1200, netPnl: -600 },
-                            { wins: 1, losses: 0, breakeven: 0, total: 1, rate: 100, avgWin: 3200, avgLoss: 0, netPnl: 3200 },
-                            { wins: 0, losses: 0, breakeven: 0, total: 0, rate: 0, avgWin: 0, avgLoss: 0, netPnl: 0 },
-                            { wins: 2, losses: 1, breakeven: 0, total: 3, rate: 66.67, avgWin: 2100, avgLoss: -1500, netPnl: 2700 },
-                            { wins: 1, losses: 0, breakeven: 0, total: 1, rate: 100, avgWin: 2800, avgLoss: 0, netPnl: 2800 },
-                            { wins: 0, losses: 0, breakeven: 0, total: 0, rate: 0, avgWin: 0, avgLoss: 0, netPnl: 0 },
-                            { wins: 0, losses: 0, breakeven: 0, total: 0, rate: 0, avgWin: 0, avgLoss: 0, netPnl: 0 },
-                            { wins: 0, losses: 0, breakeven: 0, total: 0, rate: 0, avgWin: 0, avgLoss: 0, netPnl: 0 },
-                            { wins: 0, losses: 0, breakeven: 0, total: 0, rate: 0, avgWin: 0, avgLoss: 0, netPnl: 0 },
-                            { wins: 1, losses: 1, breakeven: 0, total: 2, rate: 50, avgWin: 1900, avgLoss: -1100, netPnl: 800 },
-                            { wins: 0, losses: 0, breakeven: 0, total: 0, rate: 0, avgWin: 0, avgLoss: 0, netPnl: 0 },
-                            { wins: 2, losses: 1, breakeven: 0, total: 3, rate: 66.67, avgWin: 2200, avgLoss: -1800, netPnl: 2600 },
-                            { wins: 3, losses: 1, breakeven: 0, total: 4, rate: 75, avgWin: 1950, avgLoss: -1400, netPnl: 4450 },
-                            { wins: 0, losses: 0, breakeven: 0, total: 0, rate: 0, avgWin: 0, avgLoss: 0, netPnl: 0 },
-                            { wins: 0, losses: 0, breakeven: 0, total: 0, rate: 0, avgWin: 0, avgLoss: 0, netPnl: 0 },
-                            { wins: 1, losses: 0, breakeven: 0, total: 1, rate: 100, avgWin: 3100, avgLoss: 0, netPnl: 3100 },
-                            { wins: 1, losses: 1, breakeven: 0, total: 2, rate: 50, avgWin: 2400, avgLoss: -1600, netPnl: 800 },
-                            { wins: 0, losses: 0, breakeven: 0, total: 0, rate: 0, avgWin: 0, avgLoss: 0, netPnl: 0 },
-                            { wins: 1, losses: 2, breakeven: 0, total: 3, rate: 33.33, avgWin: 1700, avgLoss: -1300, netPnl: -900 },
-                            { wins: 1, losses: 1, breakeven: 0, total: 2, rate: 50, avgWin: 2600, avgLoss: -1200, netPnl: 1400 },
-                            { wins: 3, losses: 1, breakeven: 0, total: 4, rate: 75, avgWin: 2100, avgLoss: -1900, netPnl: 4400 }
-                        ];
-                        
-                        chartLabels = demoDates.map(date => formatDateDDMMYYYY(date));
-                        dailyWinRateData = demoStats.map(stat => stat.rate);
-                        
-                        // Calculate cumulative average win rate for demo data
+                        // No data available
+                        chartLabels = [];
+                        dailyWinRateData = [];
                         avgWinRateData = [];
-                        let cumulativeWins = 0;
-                        let cumulativeTrades = 0;
-                        demoStats.forEach((stat, index) => {
-                            cumulativeWins += stat.wins;
-                            cumulativeTrades += stat.total;
-                            avgWinRateData.push(cumulativeTrades > 0 ? (cumulativeWins / cumulativeTrades) * 100 : 0);
-                        });
+                        tooltipData = [];
                         
-                        tooltipData = demoStats.map((stat, index) => ({
-                            date: chartLabels[index],
-                            dailyWins: stat.wins,
-                            dailyLosses: stat.losses,
-                            dailyBreakeven: stat.breakeven,
-                            totalTrades: stat.total,
-                            dailyRatePct: stat.rate,
-                            avgWinSize: stat.avgWin,
-                            avgLossSize: stat.avgLoss,
-                            netPnl: stat.netPnl
-                        }));
+                        
                     } else {
                         console.log('Processing actual trade data for Daily Win Rate Chart');
                         
@@ -8411,11 +8307,7 @@
                     let strategyLabels = Object.keys(strategyData);
                     let strategyPnlValues = strategyLabels.map(strategy => strategyData[strategy].totalPnl);
                     
-                    // If no trades, show sample data matching the image
-                    if (strategyLabels.length === 0) {
-                        strategyLabels = ['Trend', 'Reversal', 'Breakout', 'Pullback'];
-                        strategyPnlValues = [43000, 19000, 1500, 1200];
-                    }
+                    // Use real data only - no sample data
                     
                     // Use consistent purple color for all bars as shown in the image
                     const strategyColors = strategyLabels.map(() => 'rgba(147, 51, 234, 0.7)'); // purple-600 with opacity
@@ -8542,13 +8434,7 @@
                     const brokerageData = sortedMonths.length > 0 ? sortedMonths.map(month => monthlyChargesData[month].brokerage) : [];
                     const otherFeesData = sortedMonths.length > 0 ? sortedMonths.map(month => monthlyChargesData[month].otherFees) : [];
                     
-                    // If no data, show sample data
-                    if (totalChargesData.length === 0) {
-                        labels.push('JAN 2024', 'FEB 2024', 'MAR 2024', 'APR 2024');
-                        totalChargesData.push(1200, 1800, 1500, 2100);
-                        brokerageData.push(800, 1200, 1000, 1400);
-                        otherFeesData.push(400, 600, 500, 700);
-                    }
+                    // Use real data only - no sample data
                     
                     const monthlyChargesChart = new Chart(monthlyChargesCtx, {
                         type: 'bar',
@@ -8874,27 +8760,7 @@
                     let tradesToAnalyze = recentTrades.length > 0 ? recentTrades : appState.trades;
                     console.log('Trades to analyze:', tradesToAnalyze.length);
                     
-                    // For testing: if no trades at all, create some demo data
-                    if (tradesToAnalyze.length === 0) {
-                        console.log('No trades found, creating demo data for testing');
-                        tradesToAnalyze = [
-                            {
-                                id: 'demo1',
-                                entry_date: new Date().toISOString().split('T')[0],
-                                mistakes: ['Exited Too Early', 'FOMO Entry']
-                            },
-                            {
-                                id: 'demo2', 
-                                entry_date: new Date().toISOString().split('T')[0],
-                                mistakes: ['Exited Too Early', 'Ignored Stop Loss']
-                            },
-                            {
-                                id: 'demo3',
-                                entry_date: new Date().toISOString().split('T')[0],
-                                mistakes: ['Overtrading']
-                            }
-                        ];
-                    }
+                    // Use real data only - no demo data
                     
                     tradesToAnalyze.forEach(trade => {
                         console.log('Trade mistakes:', trade.mistakes, 'Trade ID:', trade.id);
@@ -9394,9 +9260,7 @@
             }
         }, 100);
 
-        // --- DEMO DATA CONTROLS ---
-        const seedBtn = document.getElementById('seed-demo-data');
-        const clearBtn = document.getElementById('clear-demo-data');
+        // --- SUPABASE CONTROLS ---
         const setKeysBtn = document.getElementById('set-supabase-keys');
 
         // Supabase client and datastore
@@ -9488,51 +9352,6 @@
         // Load data immediately
         loadInitialData();
         
-        seedBtn?.addEventListener('click', () => {
-            try {
-                const now = new Date();
-                const makeDate = (daysAgo) => {
-                    const date = new Date(now.getFullYear(), now.getMonth(), now.getDate() - daysAgo, 10, 0, 0);
-                    return formatDateDDMMYYYY(date.toISOString());
-                };
-                const trades = [
-                    { id: 't1', asset:'NIFTY', direction:'Long', entry_date: makeDate(10), entry_price:22000, quantity:50, exit_date: makeDate(9), exit_price:22120, brokerage:20, other_fees:10, strategy:'Trend Following', trading_style:'Scalping', outcomeSummary:'Target Hit', reasons:'', stop_loss:21950 },
-                    { id: 't2', asset:'RELIANCE', direction:'Short', entry_date: makeDate(8), entry_price:3050, quantity:20, exit_date: makeDate(7), exit_price:3000, brokerage:15, other_fees:5, strategy:'Price Action', trading_style:'Intraday', outcomeSummary:'Stop Loss Hit', reasons:'', stop_loss:3070 },
-                    { id: 't3', asset:'HDFCBANK', direction:'Long', entry_date: makeDate(6), entry_price:1550, quantity:30, exit_date: makeDate(5), exit_price:1565, brokerage:12, other_fees:4, strategy:'Breakout', trading_style:'Swing', outcomeSummary:'Exited Early (Profit)', reasons:'' },
-                    { id: 't4', asset:'INFY', direction:'Long', entry_date: makeDate(3), entry_price:1450, quantity:25, exit_date: makeDate(2), exit_price:1440, brokerage:10, other_fees:3, strategy:'Other', trading_style:'Position', outcomeSummary:'Exited Early (Loss)', reasons:'' }
-                ];
-                const ledger = [
-                    { id:'l1', type:'Deposit', amount:100000, date:formatDateDDMMYYYY(new Date(now.getFullYear(), now.getMonth(), 1).toISOString()), notes:'Initial' },
-                    { id:'l2', type:'Withdrawal', amount:5000, date:formatDateDDMMYYYY(new Date(now.getFullYear(), now.getMonth(), 15).toISOString()), notes:'Partial' }
-                ];
-                localStorage.setItem('trades', JSON.stringify(trades));
-                localStorage.setItem('ledger', JSON.stringify(ledger));
-                appState.trades = trades;
-                appState.ledger = ledger;
-                renderDashboard();
-                renderTradeHistory();
-                renderFundManagement();
-                renderStatement();
-                renderReports();
-                renderCalendar();
-                showToast('Demo data seeded.', 'success');
-            } catch (e) { console.error('seed failed', e); }
-        });
-        clearBtn?.addEventListener('click', () => {
-            try {
-                localStorage.removeItem('trades');
-                localStorage.removeItem('ledger');
-                appState.trades = [];
-                appState.ledger = [];
-                renderDashboard();
-                renderTradeHistory();
-                renderFundManagement();
-                renderStatement();
-                renderReports();
-                renderCalendar();
-                showToast('All data cleared.', 'success');
-            } catch (e) { console.error('clear failed', e); }
-        });
         
         // Trade Statement Filter Event Listeners
         document.getElementById('apply-filter-btn')?.addEventListener('click', () => {
@@ -11414,77 +11233,7 @@
             }
         };
 
-        // Test function to create sample partial exit data (for testing purposes)
-        window.testPartialExitData = (tradeId = 'test-trade-1') => {
-            const samplePartialExits = [
-                {
-                    id: 'exit-1',
-                    tradeId: tradeId,
-                    date: '2025-09-21T00:00:00.000Z',
-                    price: 2500,
-                    quantity: 50,
-                    brokerage: 50,
-                    charges: 25,
-                    timestamp: '2025-09-21T00:00:00.000Z'
-                },
-                {
-                    id: 'exit-2',
-                    tradeId: tradeId,
-                    date: '2025-09-22T00:00:00.000Z',
-                    price: 2600,
-                    quantity: 50,
-                    brokerage: 75,
-                    charges: 30,
-                    timestamp: '2025-09-22T00:00:00.000Z'
-                },
-                {
-                    id: 'exit-3',
-                    tradeId: tradeId,
-                    date: '2025-09-23T00:00:00.000Z',
-                    price: 2400,
-                    quantity: 50,
-                    brokerage: 25,
-                    charges: 20,
-                    timestamp: '2025-09-23T00:00:00.000Z'
-                }
-            ];
-            
-            localStorage.setItem(`partial_exits_${tradeId}`, JSON.stringify(samplePartialExits));
-            console.log('Sample partial exit data created for trade ID:', tradeId);
-            console.log('Data:', samplePartialExits);
-            
-            // Create a sample trade for testing
-            const sampleTrade = {
-                id: tradeId,
-                asset: 'RELIANCE',
-                quantity: 200,
-                entry_price: 2300,
-                exit_price: 2500,
-                exit_quantity: 150,
-                exit_date: '2025-09-23T00:00:00.000Z',
-                direction: 'Long',
-                brokerage: 150,
-                other_fees: 75
-            };
-            
-            // Show the modal with test data
-            console.log('About to show modal with sample trade:', sampleTrade);
-            showPartialExitDetailsModal(sampleTrade);
-        };
 
-        // Function to test with real trade data from localStorage
-        window.testRealPartialExitData = () => {
-            const trades = JSON.parse(localStorage.getItem('trades') || '[]');
-            const partialExitTrades = trades.filter(t => t.exit_quantity && t.exit_quantity > 0 && t.exit_quantity < t.quantity);
-            
-            if (partialExitTrades.length > 0) {
-                console.log('Found partial exit trades:', partialExitTrades);
-                showPartialExitDetailsModal(partialExitTrades[0]);
-            } else {
-                console.log('No partial exit trades found. Creating sample data...');
-                testPartialExitData();
-            }
-        };
 
         const createPartialExitDetailsModal = () => {
             const modalHTML = `
