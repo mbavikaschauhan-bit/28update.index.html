@@ -2452,7 +2452,7 @@
                                     <div class="flex items-center">
                                         <div class="flex-shrink-0">
                                             <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
-                                                <i data-feather="trophy" class="h-6 w-6 text-green-600"></i>
+                                                <i data-feather="award" class="h-6 w-6 text-green-600"></i>
                                             </div>
                                         </div>
                                         <div class="ml-4">
@@ -8081,10 +8081,10 @@
                     
                     // Ensure we have data to display
                     if (chartLabels.length === 0 || dailyWinRateData.length === 0) {
-                        console.error('Daily Win Rate Chart: No data to display');
+                        console.log('Daily Win Rate Chart: No trades data available - chart will show empty state');
                         clearTimeout(loadingTimeout);
                         if (dailyWinRateMessage) {
-                            dailyWinRateMessage.textContent = 'No data available';
+                            dailyWinRateMessage.textContent = 'No trades data available. Add some trades to see your daily win rate analysis.';
                             dailyWinRateMessage.classList.remove('hidden');
                         }
                         return;
