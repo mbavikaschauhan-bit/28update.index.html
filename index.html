@@ -5969,7 +5969,7 @@
                     allRows = allRows.filter(row => {
                         if (!row.date || row.date === '—') return false;
                         
-                        // Parse date from various formats (dd/mm/yyyy, yyyy-mm-dd, etc.)
+                        // Parse date from various formats (dd/mm/yyyy, dd-mm-yyyy, yyyy-mm-dd, etc.)
                         let rowDate;
                         try {
                             if (row.date.includes('/')) {
@@ -5978,8 +5978,21 @@
                                 if (parts.length === 3) {
                                     rowDate = new Date(parts[2], parts[1] - 1, parts[0]);
                                 }
+                            } else if (row.date.includes('-')) {
+                                const parts = row.date.split('-');
+                                if (parts.length === 3) {
+                                    if (parts[0].length === 2) {
+                                        // Handle dd-mm-yyyy format (from formatDateForDisplay)
+                                        const [day, month, year] = parts;
+                                        rowDate = new Date(year, month - 1, day);
+                                    } else {
+                                        // Handle yyyy-mm-dd format
+                                        const [year, month, day] = parts;
+                                        rowDate = new Date(year, month - 1, day);
+                                    }
+                                }
                             } else {
-                                // Handle yyyy-mm-dd format
+                                // Handle other formats
                                 rowDate = new Date(row.date);
                             }
                         } catch (e) {
@@ -5989,11 +6002,31 @@
                         
                         if (isNaN(rowDate.getTime())) return false;
                         
-                        const startDate = filters.startDate ? new Date(filters.startDate) : null;
-                        const endDate = filters.endDate ? new Date(filters.endDate) : null;
+                        // Normalize filter dates to ensure proper comparison
+                        const startDate = filters.startDate ? new Date(filters.startDate + 'T00:00:00') : null;
+                        const endDate = filters.endDate ? new Date(filters.endDate + 'T23:59:59') : null;
                         
-                        if (startDate && rowDate < startDate) return false;
-                        if (endDate && rowDate > endDate) return false;
+                        // Normalize row date to date-only for accurate comparison
+                        const rowDateOnly = new Date(rowDate.getFullYear(), rowDate.getMonth(), rowDate.getDate());
+                        const startDateOnly = startDate ? new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate()) : null;
+                        const endDateOnly = endDate ? new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate()) : null;
+                        
+                        // Inclusive date range comparison
+                        if (startDateOnly && rowDateOnly < startDateOnly) return false;
+                        if (endDateOnly && rowDateOnly > endDateOnly) return false;
+                        
+                        // Debug logging for date filtering
+                        console.log('Date filtering debug:', {
+                            originalDate: row.date,
+                            parsedDate: rowDate,
+                            rowDateOnly: rowDateOnly,
+                            startFilter: filters.startDate,
+                            endFilter: filters.endDate,
+                            startDateOnly: startDateOnly,
+                            endDateOnly: endDateOnly,
+                            isValid: !isNaN(rowDate.getTime()),
+                            isInRange: (!startDateOnly || rowDateOnly >= startDateOnly) && (!endDateOnly || rowDateOnly <= endDateOnly)
+                        });
                         
                         return true;
                     });
