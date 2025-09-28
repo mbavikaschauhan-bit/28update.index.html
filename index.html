@@ -7016,8 +7016,17 @@
                     ledger.forEach(entry => {
                         if (entry.date) {
                             try {
-                                // Normalize date to YYYY-MM-DD format (strip time component)
-                                const date = new Date(entry.date);
+                                // Handle DD-MM-YYYY format
+                                let date;
+                                if (entry.date.includes('-') && entry.date.split('-')[0].length === 2) {
+                                    // DD-MM-YYYY format
+                                    const [day, month, year] = entry.date.split('-');
+                                    date = new Date(year, month - 1, day);
+                                } else {
+                                    // Standard format
+                                    date = new Date(entry.date);
+                                }
+                                
                                 if (!isNaN(date.getTime())) {
                                     const normalizedDate = date.toISOString().split('T')[0];
                                     allDates.add(normalizedDate);
@@ -7066,7 +7075,16 @@
                                 .filter(l => {
                                     if (l.type !== 'Deposit' || !l.date) return false;
                                     try {
-                                        const ledgerDate = new Date(l.date).toISOString().split('T')[0];
+                                        // Handle DD-MM-YYYY format
+                                        let ledgerDate;
+                                        if (l.date.includes('-') && l.date.split('-')[0].length === 2) {
+                                            // DD-MM-YYYY format
+                                            const [day, month, year] = l.date.split('-');
+                                            ledgerDate = new Date(year, month - 1, day).toISOString().split('T')[0];
+                                        } else {
+                                            // Standard format
+                                            ledgerDate = new Date(l.date).toISOString().split('T')[0];
+                                        }
                                         return ledgerDate <= date;
                                     } catch (e) {
                                         console.warn('Error comparing deposit date:', l.date, e);
@@ -7079,7 +7097,16 @@
                                 .filter(l => {
                                     if (l.type !== 'Withdrawal' || !l.date) return false;
                                     try {
-                                        const ledgerDate = new Date(l.date).toISOString().split('T')[0];
+                                        // Handle DD-MM-YYYY format
+                                        let ledgerDate;
+                                        if (l.date.includes('-') && l.date.split('-')[0].length === 2) {
+                                            // DD-MM-YYYY format
+                                            const [day, month, year] = l.date.split('-');
+                                            ledgerDate = new Date(year, month - 1, day).toISOString().split('T')[0];
+                                        } else {
+                                            // Standard format
+                                            ledgerDate = new Date(l.date).toISOString().split('T')[0];
+                                        }
                                         return ledgerDate <= date;
                                     } catch (e) {
                                         console.warn('Error comparing withdrawal date:', l.date, e);
