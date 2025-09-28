@@ -6142,15 +6142,21 @@
                     // Calculate current capital from trades (use real-time data)
                     const trades = appState.trades || JSON.parse(localStorage.getItem('trades') || '[]') || [];
                     const challengeStartDate = new Date(challenge.startDate);
+                    const challengeCreatedAt = new Date(challenge.createdAt || challenge.startDate);
                     
-                    // Only consider trades made after the challenge start date
-                    const closedTrades = trades.filter(t => 
-                        t.exit_date && 
-                        t.exit_price && 
-                        new Date(t.exit_date) >= challengeStartDate
-                    );
+                    // Only consider trades made AFTER the challenge creation (strict filtering)
+                    const closedTrades = trades.filter(t => {
+                        if (!t.exit_date || !t.exit_price) return false;
+                        const tradeDate = new Date(t.exit_date);
+                        return tradeDate > challengeCreatedAt; // Strictly after challenge creation
+                    });
                     const totalPnl = closedTrades.reduce((sum, t) => sum + calculateNetPnl(t), 0);
                     const currentCapital = challenge.startingCapital + totalPnl;
+                    
+                    // Ensure no previous trades influence new challenges
+                    if (closedTrades.length === 0) {
+                        console.log('No trades found for challenge - using starting capital only');
+                    }
                     
                     // Calculate progress
                     const targetGain = challenge.targetCapital - challenge.startingCapital;
@@ -6248,8 +6254,25 @@
                     document.getElementById('challenge-highest-profit').textContent = formatCurrency(highestProfit);
                     document.getElementById('challenge-max-drawdown').textContent = `${maxDrawdownPercent.toFixed(2)}%`;
                     
+                    // Debug logging for challenge completion
+                    console.log('Challenge completion check:', {
+                        startingCapital: challenge.startingCapital,
+                        targetCapital: challenge.targetCapital,
+                        currentCapital,
+                        closedTradesCount: closedTrades.length,
+                        totalPnl,
+                        challengeStartDate: challenge.startDate,
+                        challengeCreatedAt: challenge.createdAt,
+                        canComplete: currentCapital > challenge.startingCapital && 
+                                   currentCapital >= challenge.targetCapital && 
+                                   !challenge.completed
+                    });
+                    
                     // Check if challenge is completed
-                    if (currentCapital >= challenge.targetCapital && !challenge.completed) {
+                    // Only complete if current capital exceeds starting capital and reaches target
+                    if (currentCapital > challenge.startingCapital && 
+                        currentCapital >= challenge.targetCapital && 
+                        !challenge.completed) {
                         challenge.completed = true;
                         challenge.success = true;
                         challenge.completedAt = new Date().toISOString();
@@ -6263,7 +6286,15 @@
                         // Clear active challenge
                         localStorage.removeItem('activeChallenge');
                         
+                        // Update appState immediately
+                        appState.challenge = null;
+                        appState.challengeHistory = history;
+                        
                         showToast('🎉 Challenge completed successfully!', 'success');
+                        
+                        // Force immediate render (bypass debounce)
+                        clearTimeout(renderTimeout);
+                        isRendering = false;
                         renderChallenge();
                         renderChallengeHistory();
                     } else if (daysRemaining <= 0 && !challenge.completed) {
@@ -6279,7 +6310,15 @@
                         // Clear active challenge
                         localStorage.removeItem('activeChallenge');
                         
+                        // Update appState immediately
+                        appState.challenge = null;
+                        appState.challengeHistory = history;
+                        
                         showToast('Challenge time expired. Better luck next time!', 'info');
+                        
+                        // Force immediate render (bypass debounce)
+                        clearTimeout(renderTimeout);
+                        isRendering = false;
                         renderChallenge();
                         renderChallengeHistory();
                     }
@@ -6302,7 +6341,7 @@
                 
                 // Render challenge statistics
                 renderChallengeStats();
-            }, 100); // 100ms debounce delay
+            }, 10); // 10ms debounce delay (reduced for faster updates)
         };
         
         // Render challenge statistics (wins/losses)
@@ -9494,6 +9533,12 @@
             const timeframe = parseInt(document.getElementById('timeframe').value) || 30;
             const maxRisk = parseFloat(document.getElementById('max-risk').value) || 2;
 
+            // Validate target capital must be greater than starting capital
+            if (targetCapital <= startingCapital) {
+                showToast('Target capital must be greater than starting capital!', 'error');
+                return;
+            }
+
             const startDate = new Date();
             const endDate = addWeekdays(startDate, timeframe);
 
@@ -9505,6 +9550,7 @@
                 maxRisk,
                 startDate: startDate.toISOString(),
                 endDate: endDate.toISOString(),
+                createdAt: new Date().toISOString(), // Add creation timestamp
                 completed: false,
                 success: false
             };
@@ -9513,10 +9559,7 @@
                 // Save active challenge
                 localStorage.setItem('activeChallenge', JSON.stringify(challenge));
                 
-                // Add to history
-                const history = JSON.parse(localStorage.getItem('challengeHistory') || '[]');
-                history.push(challenge);
-                localStorage.setItem('challengeHistory', JSON.stringify(history));
+                // Don't add to history until completed - only save as active challenge
 
                 closeChallengeModal();
                 renderChallenge();
