@@ -2480,7 +2480,12 @@
                         </div>
 
                         <div class="mt-12">
-                            <h3 class="text-2xl font-bold mb-6" style="color: var(--text-primary);">Challenge History</h3>
+                            <div class="flex justify-between items-center mb-6">
+                                <h3 class="text-2xl font-bold" style="color: var(--text-primary);">Challenge History</h3>
+                                <button id="clear-challenge-history" class="px-4 py-2 text-sm rounded-md" style="background-color: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border-color);">
+                                    Clear History
+                                </button>
+                            </div>
                             <div id="challenge-history-container" class="space-y-4">
                                 <!-- History items will be injected here -->
                             </div>
@@ -6244,11 +6249,7 @@
                     document.getElementById('challenge-max-drawdown').textContent = `${maxDrawdownPercent.toFixed(2)}%`;
                     
                     // Check if challenge is completed
-                    // Only allow completion if challenge has been active for at least 1 hour to prevent immediate completion
-                    const challengeActiveTime = now - startDate;
-                    const minimumDuration = 60 * 60 * 1000; // 1 hour in milliseconds
-                    
-                    if (currentCapital >= challenge.targetCapital && !challenge.completed && challengeActiveTime >= minimumDuration) {
+                    if (currentCapital >= challenge.targetCapital && !challenge.completed) {
                         challenge.completed = true;
                         challenge.success = true;
                         challenge.completedAt = new Date().toISOString();
@@ -6323,6 +6324,31 @@
                 }
             } catch (e) {
                 console.error('renderChallengeStats error', e);
+            }
+        };
+
+        const clearChallengeHistory = () => {
+            try {
+                // Clear localStorage data
+                localStorage.removeItem('challengeHistory');
+                localStorage.removeItem('activeChallenge');
+                
+                // Clear app state
+                appState.challengeHistory = [];
+                appState.challenge = null;
+                
+                // Refresh UI
+                renderChallengeHistory();
+                renderChallengeStats();
+                renderChallenge();
+                
+                // Show success message
+                showToast('Challenge history cleared successfully!', 'success');
+                
+                console.log('Challenge history cleared successfully');
+            } catch (error) {
+                console.error('Error clearing challenge history:', error);
+                showToast('Error clearing challenge history', 'error');
             }
         };
 
@@ -9380,6 +9406,19 @@
         loadInitialData();
         
         
+        // Clear Challenge History Button
+        document.getElementById('clear-challenge-history')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            showConfirmationModal(
+                'Clear Challenge History?',
+                () => {
+                    clearChallengeHistory();
+                },
+                'Clear History',
+                'Clear'
+            );
+        });
+
         // Trade Statement Filter Event Listeners
         document.getElementById('apply-filter-btn')?.addEventListener('click', () => {
             // Get filter values from form elements
